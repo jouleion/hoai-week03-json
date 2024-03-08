@@ -16,21 +16,27 @@ TSP = TSPDecoder(rows=rows, columns=columns)
 buffer_img = np.zeros((rows,columns))
 separation = False
 current_digit = 0
-
-def save_to_json(time_stamp, label, separation, image):
+Encoder = NumpyEncoder()
+def append_to_data(time_stamp, label, separation, image):
     # maybe do a check if the values are of the correct type etc??
 
     """"We have to create a dictionary with our data"""
-    # # Serializing json+
-    # json_object = json.dumps(dictionary, indent=?????)
-    #
-    # # Writing to sample.json
-    # with open("digits.json", "w") as outfile:
-    #     outfile.write(json_object)
+    # Serializing json+
+    new_data = {
+        "time": time_stamp,
+        "label": label,
+        "sep": separation,
+        "frame": Encoder.default(image)
+    }
 
-    # after saving reset the separation variable
-    if(separation == True):
-        separation = False
+    data.append(new_data)
+
+def save_to_json():
+    # Writing to sample.json
+    with open("digits.json", "w") as outfile:
+        json.dump(data, outfile)
+
+
 
 
 def start_new_digit(digit):
@@ -64,7 +70,9 @@ def get_empty_buffer():
 
 while TSP.available():
     # update buffer
-    update_buffer_keep_max(TSP.readFrame())
+    frame = TSP.readFrame()
+    append_to_data(time.time(), 10, False, frame)
+    update_buffer_keep_max(frame)
 
     # convert input to int8 and resize the buffer
     resized_buffer = cv2.resize(buffer_img.astype(np.uint8),(500,600))
@@ -77,6 +85,7 @@ while TSP.available():
         case 'q':
             # quit
             cv2.destroyAllWindows()
+            save_to_json()
             exit()
         case 'c':
             # clear buffer
